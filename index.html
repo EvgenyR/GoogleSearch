@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Googlesearch : Using WebClient to send search request to Google and parse results" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Googlesearch</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/EvgenyR/GoogleSearch">View on GitHub</a>
+
+          <h1 id="project_title">Googlesearch</h1>
+          <h2 id="project_tagline">Using WebClient to send search request to Google and parse results</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/EvgenyR/GoogleSearch/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/EvgenyR/GoogleSearch/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h2>Google Search Result Parser</h2>
+
+<p>This application sends a request to Google search engine pretending to be a browser and parses the returned HTML for search results. The key points of the application are</p>
+
+<p><strong>Sending a request using WebClient</strong></p>
+
+<pre><code>public static string GetSearchResultHtlm(string keywords)
+{
+    StringBuilder sb = new StringBuilder("http://www.google.com/search?q=");
+    sb.Append(keywords);
+    return webClient.DownloadString(sb.ToString());
+}
+</code></pre>
+
+<p><strong>Parsing the HTML returned by WebClient</strong></p>
+
+<pre><code>public static List&lt;String&gt; ParseSearchResultHtml(string html)
+{
+    Regex extractUrl = new Regex(@"[&amp;?](?:q|url)=([^&amp;]+)", RegexOptions.Compiled);
+    List&lt;String&gt; searchResults = new List&lt;string&gt;();
+
+    var doc = new HtmlAgilityPack.HtmlDocument();
+    doc.LoadHtml(html);
+
+    var nodes = (from node in doc.DocumentNode.SelectNodes("//a")
+             let href = node.Attributes["href"]
+             where null != href
+             where href.Value.Contains("/url?") || href.Value.Contains("?url=")
+             select href.Value).ToList();
+
+    foreach (var node in nodes)
+    {
+        var match = extractUrl.Match(node);
+        string test = HttpUtility.UrlDecode(match.Groups[1].Value);
+        searchResults.Add(test);
+    }
+
+    return searchResults;
+}
+</code></pre>
+
+<p><strong>See also my blog entries on the subject: <a href="http://justmycode.blogspot.com.au/2012/09/playing-with-google-search-results.html">Part I</a> and <a href="http://justmycode.blogspot.com.au/2012/09/playing-with-google-search-results-2.html">Part II</a></strong></p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Googlesearch maintained by <a href="https://github.com/EvgenyR">EvgenyR</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
